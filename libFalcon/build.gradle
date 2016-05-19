@@ -1,0 +1,31 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'org.litepal.android:core:1.3.1'
+    compile 'com.alibaba:fastjson:1.1.34.android'
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile files('libs/AMap_Location_v2.4.1_20160414.jar')
+    compile files('libs/ksoap2-android-assembly-2.5.4-jar-with-dependencies.jar')
+    compile files('libs/electronicFense-20160422.jar')
+}
