@@ -32,10 +32,10 @@ import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.jxtii.wildebeest.model.CompreRecord;
-import com.jxtii.wildebeest.model.PointRecord;
-import com.jxtii.wildebeest.model.PositionRecord;
-import com.jxtii.wildebeest.util.CommUtil;
+//import com.jxtii.wildebeest.model.CompreRecord;
+//import com.jxtii.wildebeest.model.PointRecord;
+//import com.jxtii.wildebeest.model.PositionRecord;
+//import com.jxtii.wildebeest.util.CommUtil;
 import com.yuzhi.fine.R;
 
 import org.litepal.crud.DataSupport;
@@ -60,112 +60,112 @@ public class WildebeestFragment extends Fragment implements View.OnClickListener
             "急加速", "急减速", "速度", "夜间驾驶", "行驶区域", "行驶时长", "行驶里程"
     };
 
-    Handler handler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 0:
-                    int rapidAcc = 100;
-                    int radidDec = 100;
-                    int speeding = 100;
-                    int v8 = 100;
-                    int v9 = 100;
-                    int v10 = 100;
-                    int v11 = 100;
-
-                    List<PointRecord> listSpeeding = DataSupport.where("eventType = ?", "1").find(PointRecord.class);
-                    if (listSpeeding != null && listSpeeding.size() > 0) {
-                        int sum = 0;
-                        for (PointRecord pointRecord : listSpeeding) {
-                            sum += pointRecord.getPoint();
-                        }
-                        speeding -= sum;
-                        mParties[2] = mParties[2].substring(0,2) + "+" + listSpeeding.size();
-                    }
-                    speeding = speeding > 0 ? speeding : 0;
-
-                    List<PointRecord> listRapidAcc = DataSupport.where("eventType = ?", "2").find(PointRecord.class);
-                    if (listRapidAcc != null && listRapidAcc.size() > 0) {
-                        int sum = 0;
-                        for (PointRecord pointRecord : listRapidAcc) {
-                            sum += pointRecord.getPoint();
-                        }
-                        rapidAcc -= sum;
-                        mParties[0] = mParties[0].substring(0,3) + "+" + listRapidAcc.size();
-                    }
-                    rapidAcc = rapidAcc > 0 ? rapidAcc : 0;
-
-                    List<PointRecord> listRapidDec = DataSupport.where("eventType = ?", "3").find(PointRecord.class);
-                    if (listRapidDec != null && listRapidDec.size() > 0) {
-                        int sum = 0;
-                        for (PointRecord pointRecord : listRapidDec) {
-                            sum += pointRecord.getPoint();
-                        }
-                        radidDec -= sum;
-                        mParties[1] = mParties[1].substring(0,3) + "+" + listRapidDec.size();
-                    }
-                    radidDec = radidDec > 0 ? radidDec : 0;
-
-                    double score = speeding * 0.25 + rapidAcc * 0.25 + radidDec * 0.35 + v8 * 0.05 + v9 * 0.05
-                            + v10 * 0.025 + v11 * 0.025;
-
-                    bbb.setText(CommUtil.floatToStr((float) score, 1));
-
-                    int cnt = 7;
-                    ArrayList<Entry> yVals1 = new ArrayList<Entry>();
-                    yVals1.add(new Entry(rapidAcc, 0));
-                    yVals1.add(new Entry(radidDec, 1));
-                    yVals1.add(new Entry(speeding, 2));
-                    yVals1.add(new Entry(v8, 3));
-                    yVals1.add(new Entry(v9, 4));
-                    yVals1.add(new Entry(v10, 5));
-                    yVals1.add(new Entry(v11, 6));
-
-                    ArrayList<String> xVals = new ArrayList<String>();
-
-                    for (int i = 0; i < cnt; i++)
-                        xVals.add(mParties[i % mParties.length]);
-
-                    RadarDataSet set1 = new RadarDataSet(yVals1, "驾驶评分");
-                    set1.setColor(ColorTemplate.COLORFUL_COLORS[0]);
-                    set1.setFillColor(ColorTemplate.COLORFUL_COLORS[0]);
-                    set1.setValueTextColor(ColorTemplate.COLORFUL_COLORS[1]);
-                    set1.setValueTextSize(40);
-                    set1.setDrawFilled(true);
-                    set1.setLineWidth(2f);
-
-                    ArrayList<IRadarDataSet> sets = new ArrayList<IRadarDataSet>();
-                    sets.add(set1);
-
-                    RadarData data = new RadarData(xVals, sets);
-                    data.setValueTypeface(tf);
-                    data.setValueTextSize(8f);
-                    data.setDrawValues(false);
-
-                    mChart.setData(data);
-                    for (IDataSet<?> set : mChart.getData().getDataSets())
-                        set.setDrawValues(!set.isDrawValuesEnabled());
-//                    mChart.animateY(1400);
-
-                    mChart.invalidate();
-
-                    CompreRecord cr = DataSupport.findLast(CompreRecord.class);
-                    if (cr != null) {
-                        tvTravel.setText(CommUtil.floatToStr(cr.getTravelMeter(), 1));
-                        tvMaxspeed.setText(CommUtil.floatToStr(cr.getMaxSpeed(), 1));
-                        tvTimepass.setText(CommUtil.timeSpanHHmm(cr.getBeginTime(), cr.getCurrentTime()));
-                        long timeFin = CommUtil.timeSpanSecond(cr.getBeginTime(), cr.getCurrentTime());
-                        float aveSp = cr.getTravelMeter() * 18 / (timeFin * 5);
-                        tvAvespeed.setText(CommUtil.floatToStr(aveSp, 1));
-                    }else {
-                        tvTravel.setText("");
-                        tvMaxspeed.setText("");
-                        tvTimepass.setText("");
-                        tvAvespeed.setText("");
-                    }
-                    break;
-            }
-        }
-    };
+//    Handler handler = new Handler() {
+//        public void handleMessage(Message msg) {
+//            switch (msg.what) {
+//                case 0:
+//                    int rapidAcc = 100;
+//                    int radidDec = 100;
+//                    int speeding = 100;
+//                    int v8 = 100;
+//                    int v9 = 100;
+//                    int v10 = 100;
+//                    int v11 = 100;
+//
+//                    List<PointRecord> listSpeeding = DataSupport.where("eventType = ?", "1").find(PointRecord.class);
+//                    if (listSpeeding != null && listSpeeding.size() > 0) {
+//                        int sum = 0;
+//                        for (PointRecord pointRecord : listSpeeding) {
+//                            sum += pointRecord.getPoint();
+//                        }
+//                        speeding -= sum;
+//                        mParties[2] = mParties[2].substring(0,2) + "+" + listSpeeding.size();
+//                    }
+//                    speeding = speeding > 0 ? speeding : 0;
+//
+//                    List<PointRecord> listRapidAcc = DataSupport.where("eventType = ?", "2").find(PointRecord.class);
+//                    if (listRapidAcc != null && listRapidAcc.size() > 0) {
+//                        int sum = 0;
+//                        for (PointRecord pointRecord : listRapidAcc) {
+//                            sum += pointRecord.getPoint();
+//                        }
+//                        rapidAcc -= sum;
+//                        mParties[0] = mParties[0].substring(0,3) + "+" + listRapidAcc.size();
+//                    }
+//                    rapidAcc = rapidAcc > 0 ? rapidAcc : 0;
+//
+//                    List<PointRecord> listRapidDec = DataSupport.where("eventType = ?", "3").find(PointRecord.class);
+//                    if (listRapidDec != null && listRapidDec.size() > 0) {
+//                        int sum = 0;
+//                        for (PointRecord pointRecord : listRapidDec) {
+//                            sum += pointRecord.getPoint();
+//                        }
+//                        radidDec -= sum;
+//                        mParties[1] = mParties[1].substring(0,3) + "+" + listRapidDec.size();
+//                    }
+//                    radidDec = radidDec > 0 ? radidDec : 0;
+//
+//                    double score = speeding * 0.25 + rapidAcc * 0.25 + radidDec * 0.35 + v8 * 0.05 + v9 * 0.05
+//                            + v10 * 0.025 + v11 * 0.025;
+//
+//                    bbb.setText(CommUtil.floatToStr((float) score, 1));
+//
+//                    int cnt = 7;
+//                    ArrayList<Entry> yVals1 = new ArrayList<Entry>();
+//                    yVals1.add(new Entry(rapidAcc, 0));
+//                    yVals1.add(new Entry(radidDec, 1));
+//                    yVals1.add(new Entry(speeding, 2));
+//                    yVals1.add(new Entry(v8, 3));
+//                    yVals1.add(new Entry(v9, 4));
+//                    yVals1.add(new Entry(v10, 5));
+//                    yVals1.add(new Entry(v11, 6));
+//
+//                    ArrayList<String> xVals = new ArrayList<String>();
+//
+//                    for (int i = 0; i < cnt; i++)
+//                        xVals.add(mParties[i % mParties.length]);
+//
+//                    RadarDataSet set1 = new RadarDataSet(yVals1, "驾驶评分");
+//                    set1.setColor(ColorTemplate.COLORFUL_COLORS[0]);
+//                    set1.setFillColor(ColorTemplate.COLORFUL_COLORS[0]);
+//                    set1.setValueTextColor(ColorTemplate.COLORFUL_COLORS[1]);
+//                    set1.setValueTextSize(40);
+//                    set1.setDrawFilled(true);
+//                    set1.setLineWidth(2f);
+//
+//                    ArrayList<IRadarDataSet> sets = new ArrayList<IRadarDataSet>();
+//                    sets.add(set1);
+//
+//                    RadarData data = new RadarData(xVals, sets);
+//                    data.setValueTypeface(tf);
+//                    data.setValueTextSize(8f);
+//                    data.setDrawValues(false);
+//
+//                    mChart.setData(data);
+//                    for (IDataSet<?> set : mChart.getData().getDataSets())
+//                        set.setDrawValues(!set.isDrawValuesEnabled());
+////                    mChart.animateY(1400);
+//
+//                    mChart.invalidate();
+//
+//                    CompreRecord cr = DataSupport.findLast(CompreRecord.class);
+//                    if (cr != null) {
+//                        tvTravel.setText(CommUtil.floatToStr(cr.getTravelMeter(), 1));
+//                        tvMaxspeed.setText(CommUtil.floatToStr(cr.getMaxSpeed(), 1));
+//                        tvTimepass.setText(CommUtil.timeSpanHHmm(cr.getBeginTime(), cr.getCurrentTime()));
+//                        long timeFin = CommUtil.timeSpanSecond(cr.getBeginTime(), cr.getCurrentTime());
+//                        float aveSp = cr.getTravelMeter() * 18 / (timeFin * 5);
+//                        tvAvespeed.setText(CommUtil.floatToStr(aveSp, 1));
+//                    }else {
+//                        tvTravel.setText("");
+//                        tvMaxspeed.setText("");
+//                        tvTimepass.setText("");
+//                        tvAvespeed.setText("");
+//                    }
+//                    break;
+//            }
+//        }
+//    };
 
     @Bind(R.id.aaa)
     TextView aaa;
@@ -236,7 +236,7 @@ public class WildebeestFragment extends Fragment implements View.OnClickListener
     }
 
     void initData() {
-        startReflash();
+//        startReflash();
     }
 
     void initView() {
@@ -276,12 +276,12 @@ public class WildebeestFragment extends Fragment implements View.OnClickListener
         switch (v.getId()) {
             case R.id.btn_start:
                 showToast("start");
-                initLocService();
+//                initLocService();
                 uploadInitInfo();
                 break;
             case R.id.btn_finish:
                 showToast("end");
-                stopLocService();
+//                stopLocService();
                 uploadFinishInfo();
                 break;
         }
@@ -337,102 +337,102 @@ public class WildebeestFragment extends Fragment implements View.OnClickListener
         }.start();*/
     }
 
-    void initLocService() {
-        if (CommUtil.isOpenGPS(context)) {
-            showToast("已开启GPS！");
-            startLocService();
-        } else {
-            showToast("请开启GPS！");
-            Intent intent = new Intent(
-                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivityForResult(intent, GPS_OPEN_STATUS);
-        }
+//    void initLocService() {
+//        if (CommUtil.isOpenGPS(context)) {
+//            showToast("已开启GPS！");
+//            startLocService();
+//        } else {
+//            showToast("请开启GPS！");
+//            Intent intent = new Intent(
+//                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//            startActivityForResult(intent, GPS_OPEN_STATUS);
+//        }
+//
+//    }
 
-    }
+//    void stopLocService() {
+//        stopReflash();
+//
+//        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//        Intent intent = new Intent();
+//        intent.setAction(CommUtil.START_INTENT);
+//        intent.setPackage("com.yuzhi.fine");
+//        intent.putExtra("interval", 2000);
+//        //Implicit intents with startService are not safe
+////        Intent intent = new Intent(CommUtil.START_INTENT);
+//        PendingIntent pt = PendingIntent.getBroadcast(context, 0, intent, 0);
+//        am.cancel(pt);
+//
+//        intent = new Intent();
+//        intent.setAction(CommUtil.STOP_INTENT);
+//        intent.setPackage("com.yuzhi.fine");
+//        intent.putExtra("interval", 2000);
+//        //Implicit intents with startService are not safe
+////        intent = new Intent(CommUtil.STOP_INTENT);
+//        pt = PendingIntent.getBroadcast(context, 0, intent, 0);
+//        long triggerAtTime = SystemClock.elapsedRealtime() + 5 * 1000;
+//        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pt);
+//    }
 
-    void stopLocService() {
-        stopReflash();
+//    void startLocService() {
+//        DataSupport.deleteAll(PositionRecord.class);
+//        DataSupport.deleteAll(CompreRecord.class);
+//        DataSupport.deleteAll(PointRecord.class);
+//        startReflash();
+//
+//        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+//        long triggerAtTime = System.currentTimeMillis() + 5 * 1000;
+//        long interval = 15 * 60 * 1000;
+//        Intent intent = new Intent();
+//        intent.setAction(CommUtil.START_INTENT);
+//        intent.setPackage("com.yuzhi.fine");
+//        intent.putExtra("interval", 2000);
+//        //Implicit intents with startService are not safe
+////        Intent intent = new Intent(CommUtil.START_INTENT);
+//        PendingIntent pt = PendingIntent.getBroadcast(context, 0, intent, 0);
+//        am.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, pt);
+//
+//        /*Intent ii = new Intent();
+//        ii.setAction("com.jxtii.wildebeest.task_service");
+//        ii.setPackage("com.yuzhi.fine");
+//        //Implicit intents with startService are not safe
+////        ii.setClass(getActivity(), TaskService.class);
+//        ii.putExtra("interval", 2000);
+//        getActivity().startService(ii);*/
+//    }
 
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent();
-        intent.setAction(CommUtil.START_INTENT);
-        intent.setPackage("com.yuzhi.fine");
-        intent.putExtra("interval", 2000);
-        //Implicit intents with startService are not safe
-//        Intent intent = new Intent(CommUtil.START_INTENT);
-        PendingIntent pt = PendingIntent.getBroadcast(context, 0, intent, 0);
-        am.cancel(pt);
-
-        intent = new Intent();
-        intent.setAction(CommUtil.STOP_INTENT);
-        intent.setPackage("com.yuzhi.fine");
-        intent.putExtra("interval", 2000);
-        //Implicit intents with startService are not safe
-//        intent = new Intent(CommUtil.STOP_INTENT);
-        pt = PendingIntent.getBroadcast(context, 0, intent, 0);
-        long triggerAtTime = SystemClock.elapsedRealtime() + 5 * 1000;
-        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pt);
-    }
-
-    void startLocService() {
-        DataSupport.deleteAll(PositionRecord.class);
-        DataSupport.deleteAll(CompreRecord.class);
-        DataSupport.deleteAll(PointRecord.class);
-        startReflash();
-
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        long triggerAtTime = System.currentTimeMillis() + 5 * 1000;
-        long interval = 15 * 60 * 1000;
-        Intent intent = new Intent();
-        intent.setAction(CommUtil.START_INTENT);
-        intent.setPackage("com.yuzhi.fine");
-        intent.putExtra("interval", 2000);
-        //Implicit intents with startService are not safe
-//        Intent intent = new Intent(CommUtil.START_INTENT);
-        PendingIntent pt = PendingIntent.getBroadcast(context, 0, intent, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, pt);
-
-        /*Intent ii = new Intent();
-        ii.setAction("com.jxtii.wildebeest.task_service");
-        ii.setPackage("com.yuzhi.fine");
-        //Implicit intents with startService are not safe
-//        ii.setClass(getActivity(), TaskService.class);
-        ii.putExtra("interval", 2000);
-        getActivity().startService(ii);*/
-    }
-
-    void startReflash() {
-        timer = new Timer();
-        timerTask = new TimerTask() {
-            public void run() {
-                handler.sendEmptyMessage(0);
-            }
-        };
-        timer.scheduleAtFixedRate(timerTask, 2 * 1000, 5 * 1000);
-    }
+//    void startReflash() {
+//        timer = new Timer();
+//        timerTask = new TimerTask() {
+//            public void run() {
+//                handler.sendEmptyMessage(0);
+//            }
+//        };
+//        timer.scheduleAtFixedRate(timerTask, 2 * 1000, 5 * 1000);
+//    }
 
     void stopReflash() {
         if (timer != null)
             timer.cancel();
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case GPS_OPEN_STATUS:
-                Boolean isOpen = CommUtil.isOpenGPS(context);
-                if (isOpen) {
-                    showToast("已开启GPS！");
-                    startLocService();
-                } else {
-                    showToast("请开启GPS！");
-                    Intent intent = new Intent(
-                            Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivityForResult(intent, GPS_OPEN_STATUS);
-                }
-                break;
-        }
-    }
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        switch (requestCode) {
+//            case GPS_OPEN_STATUS:
+//                Boolean isOpen = CommUtil.isOpenGPS(context);
+//                if (isOpen) {
+//                    showToast("已开启GPS！");
+//                    startLocService();
+//                } else {
+//                    showToast("请开启GPS！");
+//                    Intent intent = new Intent(
+//                            Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                    startActivityForResult(intent, GPS_OPEN_STATUS);
+//                }
+//                break;
+//        }
+//    }
 
     void showToast(String message) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();

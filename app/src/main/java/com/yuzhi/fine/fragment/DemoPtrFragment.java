@@ -1,5 +1,9 @@
 package com.yuzhi.fine.fragment;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -7,11 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.jxtii.falcon.util.CommUtil;
 import com.squareup.okhttp.Request;
 import com.squareup.picasso.Picasso;
 import com.yuzhi.fine.R;
@@ -46,6 +52,10 @@ public class DemoPtrFragment extends Fragment {
     private SearchParam param;
     private int pno = 1;
     private boolean isLoadAll;
+    @Bind(R.id.start)
+    Button start;
+    @Bind(R.id.end)
+    Button end;
 
     @Bind(R.id.rotate_header_list_view_frame)
     PtrClassicFrameLayout mPtrFrame;
@@ -67,6 +77,33 @@ public class DemoPtrFragment extends Fragment {
         initData();
         initView();
         loadData();
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        long triggerAtTime = System.currentTimeMillis() + 10 * 1000;
+        long interval = 15 * 60 * 1000;
+        Intent intentBoot = new Intent();
+        intentBoot.setAction(CommUtil.START_INTENT);
+        intentBoot.setPackage(context.getPackageName());
+        PendingIntent pt = PendingIntent.getBroadcast(context, 0, intentBoot, 0);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, pt);
+
+        start.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intentBoot = new Intent();
+                intentBoot.setAction(CommUtil.START_FENCE);
+                intentBoot.setPackage(context.getPackageName());
+                context.sendBroadcast(intentBoot);
+            }
+        });
+
+        end.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intentBoot = new Intent();
+                intentBoot.setAction(CommUtil.STOP_FENCE);
+                intentBoot.setPackage(context.getPackageName());
+                context.sendBroadcast(intentBoot);
+            }
+        });
     }
 
     void initView() {

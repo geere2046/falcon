@@ -14,10 +14,10 @@ import android.view.KeyEvent;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.jxtii.wildebeest.model.CompreRecord;
-import com.jxtii.wildebeest.model.PointRecord;
-import com.jxtii.wildebeest.model.PositionRecord;
-import com.jxtii.wildebeest.util.CommUtil;
+//import com.jxtii.wildebeest.model.CompreRecord;
+//import com.jxtii.wildebeest.model.PointRecord;
+//import com.jxtii.wildebeest.model.PositionRecord;
+//import com.jxtii.wildebeest.util.CommUtil;
 import com.yuzhi.fine.R;
 import com.yuzhi.fine.fragment.BufferKnifeFragment;
 import com.yuzhi.fine.fragment.MainPagerFragment;
@@ -55,27 +55,27 @@ public class MainActivity extends BaseFragmentActivity {
         } else {
             initFromSavedInstantsState(savedInstanceState);
         }
-        if (CommUtil.isOpenGPS(this)) {
-            showToast("已开启GPS！");
-            startLocService();
-        } else {
-            showToast("请开启GPS！");
-            Intent intent = new Intent(
-                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivityForResult(intent, GPS_OPEN_STATUS);
-        }
+//        if (CommUtil.isOpenGPS(this)) {
+//            showToast("已开启GPS！");
+//            startLocService();
+//        } else {
+//            showToast("请开启GPS！");
+//            Intent intent = new Intent(
+//                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//            startActivityForResult(intent, GPS_OPEN_STATUS);
+//        }
     }
 
-    void startLocService() {
-        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        long triggerAtTime = System.currentTimeMillis() + 5 * 1000;
-        long interval = 15 * 60 * 1000;
-        Intent intent = new Intent();
-        intent.setAction(CommUtil.START_INTENT);
-        intent.setPackage(this.getPackageName());
-        PendingIntent pt = PendingIntent.getBroadcast(this, 0, intent, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, pt);
-    }
+//    void startLocService() {
+//        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+//        long triggerAtTime = System.currentTimeMillis() + 5 * 1000;
+//        long interval = 15 * 60 * 1000;
+//        Intent intent = new Intent();
+//        intent.setAction(CommUtil.START_INTENT);
+//        intent.setPackage(this.getPackageName());
+//        PendingIntent pt = PendingIntent.getBroadcast(this, 0, intent, 0);
+//        am.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, pt);
+//    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -164,23 +164,23 @@ public class MainActivity extends BaseFragmentActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case GPS_OPEN_STATUS:
-                Boolean isOpen = CommUtil.isOpenGPS(this);
-                if (isOpen) {
-                    showToast("已开启GPS！");
-                    startLocService();
-                } else {
-                    showToast("请开启GPS！");
-                    Intent intent = new Intent(
-                            Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivityForResult(intent, GPS_OPEN_STATUS);
-                }
-                break;
-        }
-    }
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        switch (requestCode) {
+//            case GPS_OPEN_STATUS:
+//                Boolean isOpen = CommUtil.isOpenGPS(this);
+//                if (isOpen) {
+//                    showToast("已开启GPS！");
+//                    startLocService();
+//                } else {
+//                    showToast("请开启GPS！");
+//                    Intent intent = new Intent(
+//                            Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                    startActivityForResult(intent, GPS_OPEN_STATUS);
+//                }
+//                break;
+//        }
+//    }
 
     void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
