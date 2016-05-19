@@ -1,0 +1,90 @@
+-----------------------------------------------
+insert into WL_INFO T
+  (T.ID,
+   T.WL_NAME,
+   T.FREQUENCY,
+   T.SUB_FREQUENCY,
+   T.START_TIME,
+   T.END_TIME,
+   T.START_DATE,
+   T.END_DATE,
+   T.WEEK_DAY,
+   T.STATUS,
+   T.CREATE_TIME,
+   T.WARN_STYLE,
+   T.RECEIVE_TELS,
+   T.CRITERIA,
+   T.DURATION,
+   T.CFCOUNT,
+   T.COM_ID,
+   T.USER_ID,
+   T.IS_UP_POWER)
+values
+  (FN_GETUUID,
+   '天钢围栏三',
+   7,
+   3,
+   TO_DATE('083030', 'hh24miss'),
+   TO_DATE('193500', 'hh24miss'),
+   TO_DATE('20160516', 'yyyymmdd'),
+   TO_DATE('20160518', 'yyyymmdd'),
+   '0101110',
+   '1',
+   TO_DATE('20160516160430', 'yyyymmddhh24miss'),
+   '110',
+   '18079150185',
+   '0',
+   5,
+   1,
+   '',
+   '',
+   'T')
+--------------------根据用户id查询（sql_tg_wl_info）---------------------------
+select I.ID,
+       I.WL_NAME,
+       I.FREQUENCY,
+       I.SUB_FREQUENCY,
+       TO_CHAR(I.START_TIME, 'hh24miss') START_TIME,
+       TO_CHAR(I.END_TIME, 'hh24miss') END_TIME,
+       I.WARN_STYLE,
+       I.RECEIVE_TELS,
+       I.CRITERIA,
+       I.DURATION,
+       I.CFCOUNT,
+       I.IS_UP_POWER
+  from WL_USER_REL T, WL_INFO I
+ where T.WL_ID = I.ID
+   and I.USER_ID = :rUserId
+   and sysdate >= I.START_DATE
+   and sysdate <= I.END_DATE + 1
+   and SUBSTR(I.WEEK_DAY, TO_CHAR(sysdate, 'd'), 1) = '1'--判断星期是否满足
+   and I.STATUS = '1'
+--------------------根据围栏id查询(sql_tg_wl_poi)------------------------------------
+select M.ID,
+       M.POI_NAME,
+       M.MAP_AREA_TYPE,
+       D.LATITUDE,
+       D.LONGITUDE,
+       D.POINT_ORDER
+  from WL_POI_REL T, MAP_POI M, MAP_POI_DATA D
+ where T.WL_ID = :rWlid
+   and T.POI_ID = M.ID
+   and M.ID = D.POI_ID
+ order by M.ID, D.POINT_ORDER
+------------------插入告警信息(sql_tg_save_warn)-------------------------------------
+insert into WL_WARN_RECORD
+  (ID,
+   COM_ID,
+   USER_ID,
+   WL_ID,
+   WARN_STYLE,
+   RECEIVE_TELS,
+   WARN_CONTENT,
+   CRITERIA,
+   LATITUDE,
+   LONGITUDE,
+   LOC_DESC,
+   CREATE_DATE,
+   DURATION,
+   CFCOUNT)
+values(fn_getuuid,:rComId,:rUserId,:rWlId,:rWarnStyle,:rReceiveTels,:rWarnContent,:rCriteria,:rLat,:rLng,:rAddr,sysdate,:rDuration,:rCfcount)
