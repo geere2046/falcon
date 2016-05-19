@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="electronicFense-20160422">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libFalcon/libs/electronicFense-20160422.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
