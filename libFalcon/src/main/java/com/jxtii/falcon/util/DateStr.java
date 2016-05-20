@@ -118,6 +118,17 @@ public class DateStr {
 		return dateStr;
 	}
 
+	/**
+	 * yyyyMMddHHmmss 格式化为 yyyy-mm-dd HH:mm:ss
+	 * @param str
+	 * @return
+	 */
+	public static String yyyymmddHHmmssFormat(String str) {
+		String reg = "(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})(\\d{2})";
+		str = str.replaceAll(reg, "$1-$2-$3 $4:$5:$6");
+		return str;
+	}
+
 	// 获取系统时间，转换成 yyMMddHHmmss 格式的日期字符串
 	public static String yyyymmddHHmmssSSSStr() {
 		Date myDate = new Date(System.currentTimeMillis()); // 获取系统时间

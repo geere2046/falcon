@@ -2,6 +2,8 @@ package com.jxtii.falcon.util;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import java.text.DecimalFormat;
 import java.util.Collections;
@@ -25,10 +27,7 @@ public class CommUtil {
     public static final String STATUS_VAILD = "1";//有效
     public static final String STATUS_EXPIRE = "2";//过期
     public static final String STATUS_INVAILD = "3";//失效
-    public static final String STATUS_CLOSING = "4";//关闭中
-    //TODO 网络通讯参数 需放到so中
-    public static final String NAME_SPACE = "http://ep.wqsm.gaf.com/";
-    public static final String WS_URL = "http://mi.zjwq.net/PubService.ws";
+    public static final String STATUS_SIGN = "4";//标记：如进出计数时标记已上报信息。不影响进出时方向判断
     public static final int CIRCLE = 1;
     public static final int RECTANGLE = 2;
     public static final int POLYGON = 3;
@@ -38,7 +37,12 @@ public class CommUtil {
     public static final int TYPE_ALARM = 1;
     public static final int TYPE_TIME = 2;
     public static final int TYPE_CON = 3;
-
+    //TODO 网络通讯参数 需放到so中
+    public static final String NAME_SPACE = "http://ep.wqsm.gaf.com/";
+    public static final String WS_URL = "http://mi.zjwq.net/PubService.ws";
+    public static final String REST_IP = "lbsys.zjwq.net";
+    public static final String REST_ACCOUNT = "tg";
+    public static final String REST_PASSWORD = "tg2016";
 
     /**
      * 判断服务是否在运行
@@ -104,7 +108,26 @@ public class CommUtil {
                     break;
                 }
             }
+        }else if(list.size() == 1){
+            res = list.get(0);
         }
         return res;
+    }
+
+    /**
+     * 判断网络是否开启 <uses-permission
+     * android:name="android.permission.ACCESS_NETWORK_STATE"/>
+     * @param c
+     * @return
+     */
+    public static boolean isNetworkAvailable(Context c) {
+        boolean netSataus = false;
+        ConnectivityManager conManager = (ConnectivityManager) c
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = conManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            netSataus = networkInfo.isAvailable();
+        }
+        return netSataus;
     }
 }

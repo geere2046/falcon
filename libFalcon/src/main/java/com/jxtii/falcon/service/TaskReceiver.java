@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.jxtii.falcon.model.AlarmInfo;
 import com.jxtii.falcon.model.FenceRecord;
+import com.jxtii.falcon.model.UserWlinfo;
 import com.jxtii.falcon.util.CommUtil;
 import com.jxtii.falcon.util.DateStr;
 import com.jxtii.falcon.util.LogEnum;
@@ -62,6 +64,7 @@ public class TaskReceiver extends BroadcastReceiver {
                 startTaskService();
             }
         } else if (CommUtil.START_FENCE.equals(intent.getAction())) {
+            logAndWrite("receive START_FENCE", LogEnum.INFO, true);
             List<FenceRecord> listFr = DataSupport.where("status=?", CommUtil.STATUS_VAILD).find(FenceRecord.class);
             if (listFr != null && listFr.size() > 0) {
                 for (FenceRecord fr : listFr) {
@@ -77,14 +80,20 @@ public class TaskReceiver extends BroadcastReceiver {
             fr.setStatus(CommUtil.STATUS_VAILD);
             fr.save();
         } else if (CommUtil.STOP_FENCE.equals(intent.getAction())) {
-            List<FenceRecord> listFr = DataSupport.where("status=?", CommUtil.STATUS_VAILD).order("startTime desc").limit(1).find(FenceRecord.class);
-            if (listFr != null && listFr.size() > 0) {
-                for (FenceRecord fr : listFr) {
-                    fr.setStopTime(DateStr.yyyymmddHHmmssStr());
-                    fr.setStatus(CommUtil.STATUS_CLOSING);
-                    fr.update(fr.getId());
-                }
+            logAndWrite("receive STOP_FENCE", LogEnum.INFO, true);
+            int aiCount = DataSupport.count(AlarmInfo.class);
+            if (aiCount > 0) {
+                DataSupport.deleteAll(AlarmInfo.class);
             }
+            int frCount = DataSupport.count(FenceRecord.class);
+            if (frCount > 0) {
+                DataSupport.deleteAll(FenceRecord.class);
+            }
+            int uwCount = DataSupport.count(UserWlinfo.class);
+            if (uwCount > 0) {
+                DataSupport.deleteAll(UserWlinfo.class);
+            }
+            stopTaskService();
         }
     }
 

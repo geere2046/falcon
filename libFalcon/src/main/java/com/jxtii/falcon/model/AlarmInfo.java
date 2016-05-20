@@ -14,6 +14,7 @@ public class AlarmInfo extends DataSupport{
     private double lat;
     private double lng;
     private String gpstime;
+    private String status;// 参考CommUtil.STATUS_VAILD等
 
     public int getId() {
         return id;
@@ -69,5 +70,13 @@ public class AlarmInfo extends DataSupport{
 
     public void setGpstime(String gpstime) {
         this.gpstime = gpstime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

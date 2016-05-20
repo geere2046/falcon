@@ -3,6 +3,7 @@ package com.jxtii.falcon.service;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -19,6 +20,7 @@ import com.gaf.lbs.electFence.util.SpatialJudgmentUtil;
 import com.jxtii.falcon.bean.LocInfo;
 import com.jxtii.falcon.bean.PubData;
 import com.jxtii.falcon.bean.PubDataList;
+import com.jxtii.falcon.bean.ResultBean;
 import com.jxtii.falcon.core.AMAPLocalizer;
 import com.jxtii.falcon.model.AlarmInfo;
 import com.jxtii.falcon.model.FenceRecord;
@@ -28,6 +30,7 @@ import com.jxtii.falcon.util.CommUtil;
 import com.jxtii.falcon.util.DateStr;
 import com.jxtii.falcon.util.LogEnum;
 import com.jxtii.falcon.util.WriteLog;
+import com.jxtii.falcon.webservice.RestWebserviceClient;
 import com.jxtii.falcon.webservice.WebserviceClient;
 
 import org.greenrobot.eventbus.EventBus;
@@ -154,7 +157,7 @@ public class TaskService extends Service {
                             uw.setReceiveTels(data.get("RECEIVE_TELS").toString());
                             uw.setCriteria(Integer.valueOf(data.get("CRITERIA").toString()));
                             uw.setDuration(Integer.valueOf(data.get("DURATION").toString()));
-                            uw.setCfCount(Integer.valueOf(data.get("DURATION").toString()));
+                            uw.setCfCount(Integer.valueOf(data.get("CFCOUNT").toString()));
                             uw.setIsUpPower(data.get("END_TIME").toString());
                             uw.save();
                         }
@@ -209,6 +212,7 @@ public class TaskService extends Service {
      */
     void judgePos(List<UserWlinfo> listEw) {
         try {
+
             if (listEw != null && listEw.size() > 0) {
                 for (UserWlinfo uw : listEw) {
                     String wlId = uw.getWlId();
@@ -319,8 +323,18 @@ public class TaskService extends Service {
                                     ai.setLng(thisLi.getLongitude());
                                     ai.setLat(thisLi.getLatitude());
                                     ai.setGpstime(thisLi.getGpstime());
+                                    ai.setStatus(CommUtil.STATUS_VAILD);
                                     ai.save();
                                     startAlarm();
+                                }else{//检测到进入围栏则失效历史数据
+                                    List<AlarmInfo> aiList = DataSupport.where("wlId = ? and status = ?", uw.getWlId(), CommUtil.STATUS_VAILD).order("gpstime desc").find(AlarmInfo.class);
+                                    if (aiList != null && aiList.size() > 0) {
+                                        for(AlarmInfo ai :aiList){
+                                            ContentValues values = new ContentValues();
+                                            values.put("status", CommUtil.STATUS_EXPIRE);
+                                            DataSupport.update(AlarmInfo.class,values, ai.getId());
+                                        }
+                                    }
                                 }
                             }else if(uw.getCriteria()==CommUtil.ENTER){
                                 int co = 0;
@@ -337,8 +351,18 @@ public class TaskService extends Service {
                                     ai.setLng(thisLi.getLongitude());
                                     ai.setLat(thisLi.getLatitude());
                                     ai.setGpstime(thisLi.getGpstime());
+                                    ai.setStatus(CommUtil.STATUS_VAILD);
                                     ai.save();
                                     startAlarm();
+                                }else{//检测到离开围栏则失效历史数据
+                                    List<AlarmInfo> aiList = DataSupport.where("wlId = ? and status = ?", uw.getWlId(), CommUtil.STATUS_VAILD).order("gpstime desc").find(AlarmInfo.class);
+                                    if (aiList != null && aiList.size() > 0) {
+                                        for(AlarmInfo ai :aiList){
+                                            ContentValues values = new ContentValues();
+                                            values.put("status", CommUtil.STATUS_EXPIRE);
+                                            DataSupport.update(AlarmInfo.class,values, ai.getId());
+                                        }
+                                    }
                                 }
                             }else if(uw.getCriteria()==CommUtil.IN_OUT) { //进出需要根据上次的位置结果去判断，不一样则记录
                                 int co = 0;
@@ -349,7 +373,7 @@ public class TaskService extends Service {
                                     if (entry.getValue().equals("EXTERIOR"))
                                         coSc += 1;
                                 }
-                                List<AlarmInfo> aiList = DataSupport.where("wlId = ?", uw.getWlId()).order("gpstime desc").find(AlarmInfo.class);
+                                List<AlarmInfo> aiList = DataSupport.where("wlId = ? and (status = ? or status = ?)", uw.getWlId(), CommUtil.STATUS_VAILD, CommUtil.STATUS_SIGN).order("gpstime desc").find(AlarmInfo.class);
                                 Boolean flag = true;
                                 String action = "";
                                 if (aiList != null && aiList.size() > 0) {
@@ -383,6 +407,7 @@ public class TaskService extends Service {
                                     ai.setLng(thisLi.getLongitude());
                                     ai.setLat(thisLi.getLatitude());
                                     ai.setGpstime(thisLi.getGpstime());
+                                    ai.setStatus(CommUtil.STATUS_VAILD);
                                     ai.save();
                                     startAlarm();
                                 }else{
@@ -425,31 +450,65 @@ public class TaskService extends Service {
                     public void run() {
                         acquireWakeLock(ctx);
                         for(UserWlinfo uw:listEw){
-                            List<AlarmInfo> aiList = DataSupport.where("wlId = ?", uw.getWlId()).order("gpstime desc").find(AlarmInfo.class);
+                            List<AlarmInfo> aiList = DataSupport.where("wlId = ? and status = ?", uw.getWlId(), CommUtil.STATUS_VAILD).order("gpstime desc").find(AlarmInfo.class);//进出时忽略标记状态（STATUS_SIGN）数据
                             if(aiList!=null&&aiList.size()>0){
                                 String warnStyle = uw.getWarnStyle();
                                 int fc = Integer.valueOf(warnStyle.substring(1, 2));
                                 int sc = Integer.valueOf(warnStyle.substring(2, 3));
-                                if(fc==0&&sc==0){//告警情况
+                                if(fc==0&&sc==0){ //告警情况
                                     if(uw.getCriteria()==CommUtil.LEAVE||uw.getCriteria()==CommUtil.ENTER){
                                         if(uw.getDuration()==0){
-                                            uploadAlarm(uw,aiList,CommUtil.TYPE_ALARM,0);
+                                            uploadAlarm(uw,aiList,0);
                                         }else{
                                             String start = aiList.get(aiList.size()-1).getGpstime();
                                             String end = aiList.get(0).getGpstime();
                                             long dis = DateStr.timeSpanSecond(start,end);
                                             if(dis>=uw.getDuration()*60){
-                                                uploadAlarm(uw,aiList,CommUtil.TYPE_ALARM,new Long(dis/60).intValue());
+                                                uploadAlarm(uw,aiList,new Long(dis/60).intValue());
                                             }
                                         }
                                     }else if(uw.getCriteria()==CommUtil.IN_OUT){
                                         //进出时不考虑延后告警
-                                        uploadAlarm(uw,aiList,CommUtil.TYPE_ALARM,0);
+                                        uploadAlarm(uw,aiList,0);
                                     }
-                                }else if(fc ==1 ){//TODO 停留情况
-
-                                }else if(sc == 1){//TODO 记录次数情况
-
+                                }else if(fc ==1 ) { //停留情况
+                                    if (uw.getCriteria() == CommUtil.LEAVE || uw.getCriteria() == CommUtil.ENTER) {
+                                        if (uw.getDuration() == 0) {
+                                            String start = aiList.get(aiList.size() - 1).getGpstime();
+                                            String end = aiList.get(0).getGpstime();
+                                            long dis = DateStr.timeSpanSecond(start, end);
+                                            uploadStick(uw, aiList, new Long(dis / 60).intValue());
+                                        } else {
+                                            String start = aiList.get(aiList.size() - 1).getGpstime();
+                                            String end = aiList.get(0).getGpstime();
+                                            long dis = DateStr.timeSpanSecond(start, end);
+                                            if (dis >= uw.getDuration() * 60) {
+                                                uploadStick(uw, aiList, new Long(dis / 60).intValue());
+                                            }
+                                        }
+                                    } else if (uw.getCriteria() == CommUtil.IN_OUT) {//进出时比对的是最近一次定位结果和现在
+                                        if (uw.getDuration() == 0) {
+                                            String start = aiList.get(0).getGpstime();
+                                            String end = DateStr.yyyymmddHHmmssStr();
+                                            long dis = DateStr.timeSpanSecond(start, end);
+                                            uploadStick(uw, aiList, new Long(dis / 60).intValue());
+                                        } else {
+                                            String start = aiList.get(0).getGpstime();
+                                            String end = DateStr.yyyymmddHHmmssStr();
+                                            long dis = DateStr.timeSpanSecond(start, end);
+                                            if (dis >= uw.getDuration() * 60) {
+                                                uploadStick(uw, aiList, new Long(dis / 60).intValue());
+                                            }
+                                        }
+                                    }
+                                }else if(sc == 1){//记录次数情况
+                                    if (uw.getCriteria() == CommUtil.LEAVE || uw.getCriteria() == CommUtil.ENTER) {
+                                        //进入或离开不支持记录次数
+                                    }else if(uw.getCriteria()==CommUtil.IN_OUT) {
+                                        if (aiList.size() >= uw.getCfCount()) {
+                                            uploadInout(uw,aiList);
+                                        }
+                                    }
                                 }else{
                                     logAndWrite("warnStyle="+warnStyle, LogEnum.INFO, true);
                                 }
@@ -472,49 +531,169 @@ public class TaskService extends Service {
      * 上报告警信息
      * @param uw
      * @param aiList
-     * @param flag
      * @param min 已进入围栏多少分钟
      */
-    void uploadAlarm(UserWlinfo uw,List<AlarmInfo> aiList,int flag,int min){
+    void uploadAlarm(UserWlinfo uw,List<AlarmInfo> aiList,int min) {
         Boolean upFlag = true;
 
-        Map<String,Object> req = new HashMap<>();
-        req.put("sqlKey","sql_tg_save_warn");
-        req.put("sqlType","sql");
-        req.put("rComId","978f6626c0a8021c004741d670f39447");//TODO 补充comId获取渠道
-        req.put("rUserId","ff8080814211ed9601421322430200d1");//TODO 补充userId获取渠道
-        req.put("rWlId",uw.getWlId());
-        req.put("rWarnStyle",flag+"");
-        req.put("rReceiveTels",uw.getWarnStyle());
-        if("EXTERIOR".equals(aiList.get(0).getAction())){
-            req.put("rCriteria",0+"");
-        }else if("INTERIOR".equals(aiList.get(0).getAction())){
-            req.put("rCriteria",1+"");
-        }else{
+        Map<String, Object> req = new HashMap<>();
+
+        String username = "黄宇晨";//TODO 补充用户名获取渠道
+        String terminalCode = "18079159780";//TODO 补充手机号获取渠道
+        String msg = username + "(" + terminalCode + ")";
+        if ("EXTERIOR".equals(aiList.get(0).getAction())) {
+            req.put("rCriteria", 0 + "");
+            msg += "离开";
+        } else if ("INTERIOR".equals(aiList.get(0).getAction())) {
+            req.put("rCriteria", 1 + "");
+            msg += "进入";
+        } else {
             upFlag = false;
         }
-        req.put("rLat",aiList.get(0).getLat());
-        req.put("rLng",aiList.get(0).getLng());
-        req.put("rWarnContent","告警内容");
-        req.put("rAddr","地址解析");//TODO 地址解析考虑在平台测实现
-        req.put("rDuration",min);
-        if(flag == CommUtil.TYPE_ALARM){
-            req.put("rCfcount",0);
-        }else if(flag == CommUtil.TYPE_TIME){
+        if (upFlag) {
+            req.put("sqlKey", "sql_tg_save_warn");
+            req.put("sqlType", "sql");
+            req.put("rComId", "978f6626c0a8021c004741d670f39447");//TODO 补充comId获取渠道
+            req.put("rUserId", "ff8080814211ed9601421322430200d1");//TODO 补充userId获取渠道
+            req.put("rWlId", uw.getWlId());
+            req.put("rWarnStyle", CommUtil.TYPE_ALARM + "");
+            req.put("rReceiveTels", uw.getReceiveTels());
 
-        }else if(flag == CommUtil.TYPE_CON){
+            req.put("rLat", aiList.get(0).getLat());
+            req.put("rLng", aiList.get(0).getLng());
 
-        }else{
-            upFlag = false;
-        }
-        if(upFlag){
+            ResultBean reBean = new RestWebserviceClient().getGaoDeGeoCodeLocInfo(aiList.get(0).getLat(), aiList.get(0).getLng(), "gcj", ctx);//TODO 正式gps数据入参改为wgs
+            String geoAddr = reBean.getDesc();
+            String extra = "0".equals(reBean.getCode()) ? ("，地址：" + geoAddr) : "";
+
+            req.put("rAddr", geoAddr);
+            req.put("rDuration", min);
+            msg += uw.getWlName() + "，时间：" + DateStr.yyyymmddHHmmssFormat(aiList.get(0).getGpstime()) + extra + "。";
+            req.put("rWarnContent", msg);
+            req.put("rCfcount", 0);
+
             String reqJson = JSON.toJSONString(req);
             PubData pd = new WebserviceClient().updateData(reqJson);
-            if(pd!=null&&"00".equals(pd.getCode())){
-                for(AlarmInfo ai:aiList){
-                    DataSupport.delete(AlarmInfo.class,ai.getId());
+            if (pd != null && "00".equals(pd.getCode())) {
+                for (AlarmInfo ai : aiList) {
+                    ContentValues values = new ContentValues();
+                    if(uw.getCriteria() == CommUtil.IN_OUT){
+                        values.put("status", CommUtil.STATUS_SIGN);
+                    }else{
+                        values.put("status", CommUtil.STATUS_INVAILD);
+                    }
+                    DataSupport.update(AlarmInfo.class,values, ai.getId());
                 }
-            }else{
+            } else {
+                logAndWrite("sql_save_warn_record resp invalid", LogEnum.INFO, false);
+            }
+        }
+    }
+
+    void uploadStick(UserWlinfo uw,List<AlarmInfo> aiList,int min) {
+        Boolean upFlag = true;
+
+        Map<String, Object> req = new HashMap<>();
+
+        String username = "黄宇晨";//TODO 补充用户名获取渠道
+        String terminalCode = "18079159780";//TODO 补充手机号获取渠道
+        String msg = "截至"+DateStr.yyyymmddHHmmssFormat(aiList.get(0).getGpstime()) + "。"+ username + "(" + terminalCode + ")";
+        if ("EXTERIOR".equals(aiList.get(0).getAction())) {
+            req.put("rCriteria", 0 + "");
+            msg += "已经离开";
+        } else if ("INTERIOR".equals(aiList.get(0).getAction())) {
+            req.put("rCriteria", 1 + "");
+            msg += "已经进入";
+        } else {
+            upFlag = false;
+        }
+        if (upFlag) {
+            req.put("sqlKey", "sql_tg_save_warn");
+            req.put("sqlType", "sql");
+            req.put("rComId", "978f6626c0a8021c004741d670f39447");//TODO 补充comId获取渠道
+            req.put("rUserId", "ff8080814211ed9601421322430200d1");//TODO 补充userId获取渠道
+            req.put("rWlId", uw.getWlId());
+            req.put("rWarnStyle", CommUtil.TYPE_TIME + "");
+            req.put("rReceiveTels", uw.getReceiveTels());
+
+            req.put("rLat", aiList.get(0).getLat());
+            req.put("rLng", aiList.get(0).getLng());
+
+            ResultBean reBean = new RestWebserviceClient().getGaoDeGeoCodeLocInfo(aiList.get(0).getLat(), aiList.get(0).getLng(), "gcj", ctx);//TODO 正式gps数据入参改为wgs
+            String geoAddr = reBean.getDesc();
+
+            req.put("rAddr", geoAddr);
+            req.put("rDuration", min);
+            msg += uw.getWlName() + "超过" + min +"分钟。";
+            req.put("rWarnContent", msg);
+            req.put("rCfcount", 0);
+
+            String reqJson = JSON.toJSONString(req);
+            PubData pd = new WebserviceClient().updateData(reqJson);
+            if (pd != null && "00".equals(pd.getCode())) {
+                for (AlarmInfo ai : aiList) {
+                    //检测停留不需要失效数据
+                }
+            } else {
+                logAndWrite("sql_save_warn_record resp invalid", LogEnum.INFO, false);
+            }
+        }
+    }
+
+    /**
+     * 上报进出次数
+     * @param uw
+     * @param aiList
+     */
+    void uploadInout(UserWlinfo uw,List<AlarmInfo> aiList) {
+        Boolean upFlag = true;
+
+        Map<String, Object> req = new HashMap<>();
+
+        String username = "黄宇晨";//TODO 补充用户名获取渠道
+        String terminalCode = "18079159780";//TODO 补充手机号获取渠道
+        String msg = username + "(" + terminalCode + ")";
+        String msgSc = "";
+        if ("EXTERIOR".equals(aiList.get(0).getAction())) {
+            req.put("rCriteria", 0 + "");
+            msgSc = "当前状态：围栏外。";
+        } else if ("INTERIOR".equals(aiList.get(0).getAction())) {
+            req.put("rCriteria", 1 + "");
+            msgSc = "当前状态：围栏内。";
+        } else {
+            upFlag = false;
+        }
+        if (upFlag) {
+            req.put("sqlKey", "sql_tg_save_warn");
+            req.put("sqlType", "sql");
+            req.put("rComId", "978f6626c0a8021c004741d670f39447");//TODO 补充comId获取渠道
+            req.put("rUserId", "ff8080814211ed9601421322430200d1");//TODO 补充userId获取渠道
+            req.put("rWlId", uw.getWlId());
+            req.put("rWarnStyle", CommUtil.TYPE_CON + "");
+            req.put("rReceiveTels", uw.getReceiveTels());
+
+            req.put("rLat", aiList.get(0).getLat());
+            req.put("rLng", aiList.get(0).getLng());
+
+            ResultBean reBean = new RestWebserviceClient().getGaoDeGeoCodeLocInfo(aiList.get(0).getLat(), aiList.get(0).getLng(), "gcj", ctx);//TODO 正式gps数据入参改为wgs
+            String geoAddr = reBean.getDesc();
+            String extra = "0".equals(reBean.getCode()) ? ("当前位置：" + geoAddr+"。") : "。";
+
+            req.put("rAddr", geoAddr);
+            req.put("rDuration", 0);
+            msg += "截至"+ DateStr.yyyymmddHHmmssFormat(aiList.get(0).getGpstime())+ "已进出" + uw.getWlName() + aiList.size()+"次，"+msgSc+ extra;
+            req.put("rWarnContent", msg);
+            req.put("rCfcount", aiList.size());
+
+            String reqJson = JSON.toJSONString(req);
+            PubData pd = new WebserviceClient().updateData(reqJson);
+            if (pd != null && "00".equals(pd.getCode())) {
+                for (AlarmInfo ai : aiList) {
+                    ContentValues values = new ContentValues();
+                    values.put("status", CommUtil.STATUS_SIGN);
+                    DataSupport.update(AlarmInfo.class,values, ai.getId());
+                }
+            } else {
                 logAndWrite("sql_save_warn_record resp invalid", LogEnum.INFO, false);
             }
         }

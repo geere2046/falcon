@@ -91,6 +91,7 @@
     <orderEntry type="library" exported="" name="animated-vector-drawable-23.3.0" level="project" />
     <orderEntry type="library" exported="" name="fastjson-1.1.34.android" level="project" />
     <orderEntry type="library" exported="" name="ksoap2-android-assembly-2.5.4-jar-with-dependencies" level="project" />
+    <orderEntry type="library" exported="" name="commons-httpclient-3.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-23.3.0" level="project" />
     <orderEntry type="library" exported="" name="eventbus-3.0.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-23.3.0" level="project" />

@@ -28,4 +28,5 @@ dependencies {
     compile files('libs/AMap_Location_v2.4.1_20160414.jar')
     compile files('libs/ksoap2-android-assembly-2.5.4-jar-with-dependencies.jar')
     compile files('libs/electronicFense-20160422.jar')
+    compile files('libs/commons-httpclient-3.0.jar')
 }
